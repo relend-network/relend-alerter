@@ -1,5 +1,8 @@
+import './EventWatcher';
+import './EventProcessor';
+
 async function main() {
-  console.log('Hello, world!');
+  console.log('Started MetaMorpho alerter');
 }
 
 main();
