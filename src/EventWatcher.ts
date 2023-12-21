@@ -1,4 +1,4 @@
-import { ethers, Contract, Interface, Log, ContractEventPayload } from 'ethers';
+import { ethers, Contract, Interface } from 'ethers';
 import WebSocket from 'ws';
 import dotenv from 'dotenv';
 import { metamorphoAbi } from './abis/MetaMorphoAbi';
@@ -54,7 +54,8 @@ function startListening() {
     EventQueue.push({
       eventName: parsed.name,
       eventArgs: parsed.args.map((_) => _.toString()),
-      block: event.log.blockNumber
+      block: event.log.blockNumber,
+      originArgs: parsed.args
     });
   });
 }
