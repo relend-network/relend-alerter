@@ -44,6 +44,7 @@ function buildMessageFromEvent(event: EventData): string | undefined {
       return `${buildMsgHeader(event)}\n` + 'NO SPECIFIC IMPLEMENTATION';
     case 'updatelasttotalassets':
     case 'accrueinterest':
+    case 'accruefee':
     case 'createmetamorpho':
     case 'transfer':
     case 'deposit':
