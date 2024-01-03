@@ -44,7 +44,7 @@ async function ProcessAsync(event: EventData) {
 function buildMessageFromEvent(event: EventData): string | undefined {
   switch (event.eventName.toLowerCase()) {
     default:
-      return `${buildMsgHeader(event)}\n` + 'NO SPECIFIC IMPLEMENTATION';
+      return `${buildMsgHeader(event)}\n` + event.eventArgs.join('\n');
     case 'updatelasttotalassets':
     case 'accrueinterest':
     case 'accruefee':
