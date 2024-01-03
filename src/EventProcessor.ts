@@ -4,6 +4,8 @@ import { SendTelegramMessage } from './TelegramHelper';
 
 const TG_BOT_ID: string | undefined = process.env.TG_BOT_ID;
 const TG_CHAT_ID: string | undefined = process.env.TG_CHAT_ID;
+const METAMORPHO_NAME: string | undefined = process.env.METAMORPHO_NAME;
+const EXPLORER_URI: string | undefined = process.env.EXPLORER_URI;
 
 async function startEventProcessor() {
   console.log('Started the event processor');
@@ -25,6 +27,7 @@ async function ProcessAsync(event: EventData) {
   if (!TG_BOT_ID) {
     throw new Error('No TG_BOT_ID found in env');
   }
+
   if (!TG_CHAT_ID) {
     throw new Error('No TG_BOT_ID found in env');
   }
@@ -168,7 +171,15 @@ function buildMessageFromEvent(event: EventData): string | undefined {
 }
 
 function buildMsgHeader(event: EventData): string {
-  return `New ${event.eventName} detected on block ${event.block}:`;
+  return (
+    `[${METAMORPHO_NAME}]\n` +
+    `tx: ${buildTxUrl(event.txHash)}\n` +
+    `New ${event.eventName} detected on block ${event.block}:`
+  );
+}
+
+function buildTxUrl(txhash: string): string {
+  return `${EXPLORER_URI}/tx/${txhash}`;
 }
 
 startEventProcessor();

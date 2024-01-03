@@ -52,6 +52,7 @@ function startListening() {
     }
 
     EventQueue.push({
+      txHash: event.log.transactionHash,
       eventName: parsed.name,
       eventArgs: parsed.args.map((_) => _.toString()),
       block: event.log.blockNumber,
