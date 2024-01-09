@@ -50,11 +50,50 @@ function buildMessageFromEvent(event: EventData): string | undefined {
     case 'accruefee':
     case 'createmetamorpho':
     case 'transfer':
-    case 'deposit':
-    case 'withdraw':
     case 'approval':
       // user facing events, no need for an alert
       return undefined;
+    case 'deposit': {
+      // event Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares);
+      const assetThreshold = process.env.ASSET_THRESHOLD;
+      if (!assetThreshold) {
+        return undefined;
+      }
+
+      if (BigInt(event.eventArgs[2]) >= BigInt(assetThreshold)) {
+        return (
+          `${buildMsgHeader(event)}\n` +
+          `sender: ${event.eventArgs[0]}\n` +
+          `owner: ${event.eventArgs[1]}\n` +
+          `asset: ${event.eventArgs[2]}\n` +
+          `shares: ${event.eventArgs[3]}\n`
+        );
+      } else {
+        console.log(`Ignoring deposit event because assets < threshold. ${event.eventArgs[2]} < ${assetThreshold}`);
+        return undefined;
+      }
+    }
+    case 'withdraw': {
+      // event Withdraw(address indexed sender,address indexed receiver,address indexed owner,uint256 assets,uint256 shares);
+      const assetThreshold = process.env.ASSET_THRESHOLD;
+      if (!assetThreshold) {
+        return undefined;
+      }
+
+      if (BigInt(event.eventArgs[3]) >= BigInt(assetThreshold)) {
+        return (
+          `${buildMsgHeader(event)}\n` +
+          `sender: ${event.eventArgs[0]}\n` +
+          `receiver: ${event.eventArgs[1]}\n` +
+          `owner: ${event.eventArgs[2]}\n` +
+          `assets: ${event.eventArgs[3]}\n` +
+          `shares: ${event.eventArgs[4]}\n`
+        );
+      } else {
+        console.log(`Ignoring withdraw event because assets < threshold. ${event.eventArgs[3]} < ${assetThreshold}`);
+        return undefined;
+      }
+    }
     case 'submittimelock':
       // event SubmitTimelock(uint256 newTimelock);
       return `${buildMsgHeader(event)}\n` + `newTimelock: ${event.eventArgs[0]}\n`;
