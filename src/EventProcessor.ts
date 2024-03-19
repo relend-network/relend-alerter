@@ -1,11 +1,13 @@
 import { EventData, EventQueue } from './EventQueue';
-import { sleep } from './Utils';
+import { FriendlyFormatNumber, norm, sleep } from './Utils';
 import { SendTelegramMessage } from './TelegramHelper';
 
 const TG_BOT_ID: string | undefined = process.env.TG_BOT_ID;
 const TG_CHAT_ID: string | undefined = process.env.TG_CHAT_ID;
 const METAMORPHO_NAME: string | undefined = process.env.METAMORPHO_NAME;
 const EXPLORER_URI: string | undefined = process.env.EXPLORER_URI;
+const ASSET_DECIMALS: string | undefined = process.env.ASSET_DECIMALS;
+const ASSET: string | undefined = process.env.ASSET;
 
 async function startEventProcessor() {
   console.log('Started the event processor');
@@ -57,12 +59,17 @@ function buildMessageFromEvent(event: EventData): string | undefined {
       // event Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares);
       const assetThreshold = process.env.ASSET_THRESHOLD;
       if (!assetThreshold) {
+        console.log('ASSET_THRESHOLD not set, ignoring event');
         return undefined;
       }
 
       if (BigInt(event.eventArgs[2]) >= BigInt(assetThreshold)) {
+        let amountNormalized = '';
+        if (ASSET_DECIMALS && ASSET) {
+          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[2], Number(ASSET_DECIMALS)))}] ${ASSET}`;
+        }
         return (
-          `${buildMsgHeader(event)}\n` +
+          `${buildMsgHeader(event, amountNormalized)}\n` +
           `sender: ${event.eventArgs[0]}\n` +
           `owner: ${event.eventArgs[1]}\n` +
           `asset: ${event.eventArgs[2]}\n` +
@@ -77,12 +84,18 @@ function buildMessageFromEvent(event: EventData): string | undefined {
       // event Withdraw(address indexed sender,address indexed receiver,address indexed owner,uint256 assets,uint256 shares);
       const assetThreshold = process.env.ASSET_THRESHOLD;
       if (!assetThreshold) {
+        console.log('ASSET_THRESHOLD not set, ignoring event');
         return undefined;
       }
 
       if (BigInt(event.eventArgs[3]) >= BigInt(assetThreshold)) {
+        let amountNormalized = '';
+        if (ASSET_DECIMALS && ASSET) {
+          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[2], Number(ASSET_DECIMALS)))}] ${ASSET}`;
+        }
+
         return (
-          `${buildMsgHeader(event)}\n` +
+          `${buildMsgHeader(event, amountNormalized)}\n` +
           `sender: ${event.eventArgs[0]}\n` +
           `receiver: ${event.eventArgs[1]}\n` +
           `owner: ${event.eventArgs[2]}\n` +
@@ -209,11 +222,11 @@ function buildMessageFromEvent(event: EventData): string | undefined {
   }
 }
 
-function buildMsgHeader(event: EventData): string {
+function buildMsgHeader(event: EventData, headerAddMsg = ''): string {
   return (
-    `[${METAMORPHO_NAME}]\n` +
+    `[${METAMORPHO_NAME}] [${event.eventName}] ${headerAddMsg}\n` +
     `tx: ${buildTxUrl(event.txHash)}\n` +
-    `New ${event.eventName} detected on block ${event.block}:`
+    `Detected on block ${event.block}:`
   );
 }
 
