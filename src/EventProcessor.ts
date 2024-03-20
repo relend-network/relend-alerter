@@ -66,7 +66,7 @@ function buildMessageFromEvent(event: EventData): string | undefined {
       if (BigInt(event.eventArgs[2]) >= BigInt(assetThreshold)) {
         let amountNormalized = '';
         if (ASSET_DECIMALS && ASSET) {
-          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[2], Number(ASSET_DECIMALS)))}] ${ASSET}`;
+          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[2], Number(ASSET_DECIMALS)))} ${ASSET}]`;
         }
         return (
           `${buildMsgHeader(event, amountNormalized)}\n` +
@@ -91,7 +91,7 @@ function buildMessageFromEvent(event: EventData): string | undefined {
       if (BigInt(event.eventArgs[3]) >= BigInt(assetThreshold)) {
         let amountNormalized = '';
         if (ASSET_DECIMALS && ASSET) {
-          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[2], Number(ASSET_DECIMALS)))}] ${ASSET}`;
+          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[3], Number(ASSET_DECIMALS)))} ${ASSET}]`;
         }
 
         return (
