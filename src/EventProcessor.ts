@@ -202,7 +202,7 @@ function buildMessageFromEvent(event: EventData): string | undefined {
       if (BigInt(event.eventArgs[2]) >= BigInt(assetThreshold)) {
         let amountNormalized = '';
         if (ASSET_DECIMALS && ASSET) {
-          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[3], Number(ASSET_DECIMALS)))} ${ASSET}]`;
+          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[2], Number(ASSET_DECIMALS)))} ${ASSET}]`;
         }
 
         return (
@@ -214,7 +214,7 @@ function buildMessageFromEvent(event: EventData): string | undefined {
         );
       } else {
         console.log(
-          `Ignoring reallocate supply event because assets < threshold. ${event.eventArgs[3]} < ${assetThreshold}`
+          `Ignoring reallocate supply event because assets < threshold. ${event.eventArgs[2]} < ${assetThreshold}`
         );
         return undefined;
       }
@@ -230,7 +230,7 @@ function buildMessageFromEvent(event: EventData): string | undefined {
       if (BigInt(event.eventArgs[2]) >= BigInt(assetThreshold)) {
         let amountNormalized = '';
         if (ASSET_DECIMALS && ASSET) {
-          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[3], Number(ASSET_DECIMALS)))} ${ASSET}]`;
+          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[2], Number(ASSET_DECIMALS)))} ${ASSET}]`;
         }
 
         return (
@@ -242,7 +242,7 @@ function buildMessageFromEvent(event: EventData): string | undefined {
         );
       } else {
         console.log(
-          `Ignoring reallocate supply event because assets < threshold. ${event.eventArgs[3]} < ${assetThreshold}`
+          `Ignoring reallocate withdraw event because assets < threshold. ${event.eventArgs[2]} < ${assetThreshold}`
         );
         return undefined;
       }
