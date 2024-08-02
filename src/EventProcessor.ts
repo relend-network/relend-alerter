@@ -1,6 +1,7 @@
 import { EventData, EventQueue } from './EventQueue';
 import { FriendlyFormatNumber, norm, sleep } from './Utils';
 import { SendTelegramMessage } from './TelegramHelper';
+import { ethers } from 'ethers';
 
 const TG_BOT_ID: string | undefined = process.env.TG_BOT_ID;
 const TG_CHAT_ID: string | undefined = process.env.TG_CHAT_ID;
@@ -35,6 +36,19 @@ async function ProcessAsync(event: EventData) {
   }
 
   console.log(`NEW EVENT DETECTED AT BLOCK ${event.block}: ${event.eventName}`, { args: event.eventArgs });
+  if (process.env.FILTER_AUTHOR) {
+    if (
+      event.eventName.toLowerCase() === 'reallocatewithdraw' ||
+      event.eventName.toLowerCase() === 'reallocatesupply'
+    ) {
+      const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+      const transaction = await provider.getTransaction(event.txHash);
+      if (transaction && transaction.from.toLowerCase() === '0xf404dbb34f7f16bfa315daaa9a8c33c7abe94ed1') {
+        console.log(`Ignoring event - ${event.eventName} - from address 0xF404dBb34f7F16BfA315daaA9a8C33c7aBe94eD1`);
+        return;
+      }
+    }
+  }
   const msgToSend: string | undefined = buildMessageFromEvent(event);
   if (!msgToSend) {
     console.log('Nothing to send to TG');
