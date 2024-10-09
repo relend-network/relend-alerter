@@ -36,7 +36,7 @@ async function ProcessAsync(event: EventData) {
   }
 
   console.log(`NEW EVENT DETECTED AT BLOCK ${event.block}: ${event.eventName}`, { args: event.eventArgs });
-  if (process.env.FILTER_AUTHOR) {
+  if (process.env.FILTER_AUTHOR && process.env.FILTER_AUTHOR.toLowerCase() == 'true') {
     if (
       event.eventName.toLowerCase() === 'reallocatewithdraw' ||
       event.eventName.toLowerCase() === 'reallocatesupply'
