@@ -59,16 +59,6 @@ async function ProcessAsync(event: EventData) {
 
 function buildMessageFromEvent(event: EventData): string | undefined {
   switch (event.eventName.toLowerCase()) {
-    default:
-      return `${buildMsgHeader(event)}\n` + event.eventArgs.join('\n');
-    case 'updatelasttotalassets':
-    case 'accrueinterest':
-    case 'accruefee':
-    case 'createmetamorpho':
-    case 'transfer':
-    case 'approval':
-      // user facing events, no need for an alert
-      return undefined;
     case 'deposit': {
       // event Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares);
       const assetThreshold = process.env.ASSET_THRESHOLD;
@@ -94,181 +84,36 @@ function buildMessageFromEvent(event: EventData): string | undefined {
         return undefined;
       }
     }
-    case 'withdraw': {
-      // event Withdraw(address indexed sender,address indexed receiver,address indexed owner,uint256 assets,uint256 shares);
-      const assetThreshold = process.env.ASSET_THRESHOLD;
-      if (!assetThreshold) {
-        console.log('ASSET_THRESHOLD not set, ignoring event');
-        return undefined;
-      }
-
-      if (BigInt(event.eventArgs[3]) >= BigInt(assetThreshold)) {
-        let amountNormalized = '';
-        if (ASSET_DECIMALS && ASSET) {
-          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[3], Number(ASSET_DECIMALS)))} ${ASSET}]`;
-        }
-
-        return (
-          `${buildMsgHeader(event, amountNormalized)}\n` +
-          `sender: ${event.eventArgs[0]}\n` +
-          `receiver: ${event.eventArgs[1]}\n` +
-          `owner: ${event.eventArgs[2]}\n` +
-          `assets: ${event.eventArgs[3]}\n` +
-          `shares: ${event.eventArgs[4]}\n`
-        );
-      } else {
-        console.log(`Ignoring withdraw event because assets < threshold. ${event.eventArgs[3]} < ${assetThreshold}`);
-        return undefined;
-      }
-    }
+    case 'updatelasttotalassets':
+    case 'accrueinterest':
+    case 'accruefee':
+    case 'createmetamorpho':
+    case 'transfer':
+    case 'approval':
+    case 'withdraw':
     case 'submittimelock':
-      // event SubmitTimelock(uint256 newTimelock);
-      return `${buildMsgHeader(event)}\n` + `newTimelock: ${event.eventArgs[0]}\n`;
     case 'settimelock':
-      // event SetTimelock(address indexed caller, uint256 newTimelock);
-      return `${buildMsgHeader(event)}\n` + `caller: ${event.eventArgs[0]}\n` + `newTimelock: ${event.eventArgs[1]}\n`;
     case 'setskimrecipient':
-      // event SetSkimRecipient(address indexed newSkimRecipient);
-      return `${buildMsgHeader(event)}\n` + `newSkimRecipient: ${event.eventArgs[0]}\n`;
     case 'setfee':
-      // event SetFee(address indexed caller, uint256 newFee);
-      return `${buildMsgHeader(event)}\n` + `caller: ${event.eventArgs[0]}\n` + `newFee: ${event.eventArgs[1]}\n`;
     case 'setfeerecipient':
-      // event SetFeeRecipient(address indexed newFeeRecipient);
-      return `${buildMsgHeader(event)}\n` + `newFeeRecipient: ${event.eventArgs[0]}\n`;
     case 'submitguardian':
-      // event SubmitGuardian(address indexed newGuardian);
-      return `${buildMsgHeader(event)}\n` + `newGuardian: ${event.eventArgs[0]}\n`;
     case 'setguardian':
-      // event SetGuardian(address indexed caller, address indexed guardian);
-      return `${buildMsgHeader(event)}\n` + `caller: ${event.eventArgs[0]}\n` + `guardian: ${event.eventArgs[1]}\n`;
     case 'submitcap':
-      // event SubmitCap(address indexed caller, Id indexed id, uint256 cap);
-      return (
-        `${buildMsgHeader(event)}\n` +
-        `caller: ${event.eventArgs[0]}\n` +
-        `id: ${event.eventArgs[1]}\n` +
-        `cap: ${event.eventArgs[2]}\n`
-      );
-
     case 'setcap':
-      // event SetCap(address indexed caller, Id indexed id, uint256 cap);
-      return (
-        `${buildMsgHeader(event)}\n` +
-        `caller: ${event.eventArgs[0]}\n` +
-        `id: ${event.eventArgs[1]}\n` +
-        `cap: ${event.eventArgs[2]}\n`
-      );
-
     case 'submitmarketremoval':
-      // event SubmitMarketRemoval(address indexed caller, Id indexed id);
-      return `${buildMsgHeader(event)}\n` + `caller: ${event.eventArgs[0]}\n` + `id: ${event.eventArgs[1]}\n`;
-
     case 'setcurator':
-      // event SetCurator(address indexed newCurator);
-      return `${buildMsgHeader(event)}\n` + `newCurator: ${event.eventArgs[0]}\n`;
-
     case 'setisallocator':
-      // event SetIsAllocator(address indexed allocator, bool isAllocator);
-      return (
-        `${buildMsgHeader(event)}\n` + `allocator: ${event.eventArgs[0]}\n` + `isAllocator: ${event.eventArgs[1]}\n`
-      );
-
     case 'revokependingtimelock':
-      // event RevokePendingTimelock(address indexed caller);
-      return `${buildMsgHeader(event)}\n` + `caller: ${event.eventArgs[0]}\n`;
-
     case 'revokependingcap':
-      // event RevokePendingCap(address indexed caller, Id indexed id);
-      return `${buildMsgHeader(event)}\n` + `caller: ${event.eventArgs[0]}\n` + `id: ${event.eventArgs[1]}\n`;
-
     case 'revokependingguardian':
-      // event RevokePendingGuardian(address indexed caller);
-      return `${buildMsgHeader(event)}\n` + `caller: ${event.eventArgs[0]}\n`;
-
     case 'revokependingmarketremoval':
-      // event RevokePendingMarketRemoval(address indexed caller, Id indexed id);
-      return `${buildMsgHeader(event)}\n` + `caller: ${event.eventArgs[0]}\n` + `id: ${event.eventArgs[1]}\n`;
-
     case 'setsupplyqueue':
-      // event SetSupplyQueue(address indexed caller, Id[] newSupplyQueue);
-      return (
-        `${buildMsgHeader(event)}\n` +
-        `caller: ${event.eventArgs[0]}\n` +
-        `newSupplyQueue: ${event.originArgs[1].map((_: any) => _.toString()).join(', ')}\n`
-      );
-
     case 'setwithdrawqueue':
-      // event SetWithdrawQueue(address indexed caller, Id[] newWithdrawQueue);
-      return (
-        `${buildMsgHeader(event)}\n` +
-        `caller: ${event.eventArgs[0]}\n` +
-        `newWithdrawQueue:\n${event.originArgs[1].map((_: any) => '- ' + _.toString()).join('\n')}\n`
-      );
-    case 'reallocatesupply': {
-      // event ReallocateSupply(address indexed caller, Id indexed id, uint256 suppliedAssets, uint256 suppliedShares);
-      const assetThreshold = process.env.ASSET_THRESHOLD;
-      if (!assetThreshold) {
-        console.log('ASSET_THRESHOLD not set, ignoring event');
-        return undefined;
-      }
-
-      if (BigInt(event.eventArgs[2]) >= BigInt(assetThreshold)) {
-        let amountNormalized = '';
-        if (ASSET_DECIMALS && ASSET) {
-          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[2], Number(ASSET_DECIMALS)))} ${ASSET}]`;
-        }
-
-        return (
-          `${buildMsgHeader(event, amountNormalized)}\n` +
-          `caller: ${event.eventArgs[0]}\n` +
-          `id: ${event.eventArgs[1]}\n` +
-          `suppliedAssets: ${event.eventArgs[2]}\n` +
-          `suppliedShares: ${event.eventArgs[3]}\n`
-        );
-      } else {
-        console.log(
-          `Ignoring reallocate supply event because assets < threshold. ${event.eventArgs[2]} < ${assetThreshold}`
-        );
-        return undefined;
-      }
-    }
-    case 'reallocatewithdraw': {
-      // event ReallocateWithdraw(address indexed caller, Id indexed id, uint256 withdrawnAssets, uint256 withdrawnShares);
-      const assetThreshold = process.env.ASSET_THRESHOLD;
-      if (!assetThreshold) {
-        console.log('ASSET_THRESHOLD not set, ignoring event');
-        return undefined;
-      }
-
-      if (BigInt(event.eventArgs[2]) >= BigInt(assetThreshold)) {
-        let amountNormalized = '';
-        if (ASSET_DECIMALS && ASSET) {
-          amountNormalized = `[${FriendlyFormatNumber(norm(event.eventArgs[2], Number(ASSET_DECIMALS)))} ${ASSET}]`;
-        }
-
-        return (
-          `${buildMsgHeader(event, amountNormalized)}\n` +
-          `caller: ${event.eventArgs[0]}\n` +
-          `id: ${event.eventArgs[1]}\n` +
-          `withdrawnAssets: ${event.eventArgs[2]}\n` +
-          `withdrawnShares: ${event.eventArgs[3]}\n`
-        );
-      } else {
-        console.log(
-          `Ignoring reallocate withdraw event because assets < threshold. ${event.eventArgs[2]} < ${assetThreshold}`
-        );
-        return undefined;
-      }
-    }
+    case 'reallocatesupply':
+    case 'reallocatewithdraw':
     case 'skim':
-      // event Skim(address indexed caller, address indexed token, uint256 amount);
-      return (
-        `${buildMsgHeader(event)}\n` +
-        `caller: ${event.eventArgs[0]}\n` +
-        `token: ${event.eventArgs[1]}\n` +
-        `amount: ${event.eventArgs[2]}\n`
-      );
+    default:
+      return undefined;
   }
 }
 
